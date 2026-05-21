@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, {useState } from "react"
 
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
@@ -6,37 +6,38 @@ export const Home = () => {
 
 	const { store, dispatch } = useGlobalReducer()
 
-	const loadMessage = async () => {
-		try {
-			const backendUrl = import.meta.env.VITE_BACKEND_URL
+	const [myImage, setMyImage]= useState(null)
 
-			if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file")
+	const uploadImage = async(e) =>{
+	    console.log(e.target.files[0]);
+		const formData = new FormData()
 
-			const response = await fetch(backendUrl + "/api/hello")
-			const data = await response.json()
+		formData.append("image", e.target.files[0])
 
-			if (response.ok) dispatch({ type: "set_hello", payload: data.message })
-
-			return data
-
-		} catch (error) {
-			if (error.message) throw new Error(
-				`Could not fetch the message from the backend.
-				Please check if the backend is running and the backend port is public.`
-			);
-		}
+		const response = await fetch(import.meta.env.VITE_BACKEND_URL + "api/upload", {
+			method:"POST",
+			body: formData
+		})
+		const data = await response.json()
+		setMyImage(data)
+		console.log(data);
+		
 
 	}
 
-	useEffect(() => {
-		loadMessage()
-	}, [])
+
+
+
+
 
 	return (
 		<div className="text-center mt-5 container">
 			<h1 className="display-4">Hello PT-68!!</h1>
-			
-			<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias deleniti corporis exercitationem voluptates ratione quis atque possimus nulla. Molestiae pariatur amet similique aspernatur, itaque ad fugiat autem mollitia dolore quas!</p>
+
+			<input type="file" onChange={uploadImage} />
+
+			<img src={myImage} alt="imagen cargada por el usuario" />
+
 		</div>
 	);
 }; 

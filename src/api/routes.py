@@ -6,10 +6,41 @@ from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
+# importacion
+import os, cloudinary, cloudinary.uploader  
+
+
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 CORS(api)
+
+
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+)
+
+
+@api.route('/upload', methods=['POST'])
+def upload_image():
+
+    file= request.files["image"]
+
+    if not file:
+        return jsonify({"error": "the file ir required"}), 400
+
+    result =cloudinary.uploader.upload(file)
+
+    if 'secure_url' not in result:
+        return jsonify({"error": "the image can not be uploaded"}), 400
+    
+    return jsonify(result["secure_url"]), 200 
+
+
+
+
 
 
 @api.route('/hello', methods=['POST', 'GET'])
